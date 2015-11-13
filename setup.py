@@ -51,7 +51,7 @@ setup(
 
     entry_points={
         'console_scripts': [
-            'sample=compare-with-remote:compare_with_remote/compare_with_remote:main',
+            'compare-with-remote=compare_with_remote.compare_with_remote:main',
         ],
     },
 )
