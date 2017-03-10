@@ -51,4 +51,4 @@ You want to compare all files in the /etc directory which contain the word "rsys
 Don't be shy
 ------------
 
-I want to know what you think and feel. Please leave a comment via the github issue tracker. Thank you.
+I want to know what you think and feel. Please leave a comment via the github issue tracker. I love feedback.
