@@ -98,8 +98,8 @@ def get_file_list_of_local_directory(directory):
     return local_files
 
 def extract_tar_skip_hard_links(stdoutdata, base_dir):
+    # useless reinvention of extractall(). Needed to work around http://bugs.python.org/issue29612
     with tarfile.open(fileobj=io.BytesIO(stdoutdata)) as tar_obj:
-        # http://bugs.python.org/issue29612
         for member in tar_obj.getmembers():
             if member.islnk():
                 continue
