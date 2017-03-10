@@ -1,7 +1,7 @@
 compare-with-remote
 ---------------------
 
-Compare local script output with remote script output
+Compare local files with remote files 
 
 Install
 -------
