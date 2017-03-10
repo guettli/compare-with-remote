@@ -16,7 +16,7 @@ def main():
     logging.basicConfig()
     logger.setLevel(logging.INFO)
 
-    parser = argparse.ArgumentParser(description='compare local files with remote files via ssh')
+    parser = argparse.ArgumentParser(description='compare local files with remote files via ssh. Fetches files via ssh, then calls "meld" to copmare the directories')
     parser.add_argument('--only-files-containing-pattern')
     parser.add_argument('user_at_host', help='user@remote-host', )
     parser.add_argument('file_or_directory', nargs='+')
