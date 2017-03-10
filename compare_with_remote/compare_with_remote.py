@@ -6,6 +6,8 @@ import io
 import logging
 import os
 import subprocess
+
+import sys
 import tarfile
 import tempfile
 from collections import defaultdict
@@ -66,7 +68,7 @@ def create_tmp_dir_and_fill_it_with_files(file_or_directory_list_list, only_file
                                           ssh_user_at_host=None):
     filter_files_pipe = ''
     if only_files_containing_pattern:
-        filter_files_pipe = '''| xargs grep -liE '{}' '''.format(only_files_containing_pattern)
+        filter_files_pipe = '''xargs grep -liE '{}' | '''.format(only_files_containing_pattern)
     cmd = []
     shell = True
     if ssh_user_at_host:
@@ -79,7 +81,12 @@ def create_tmp_dir_and_fill_it_with_files(file_or_directory_list_list, only_file
     (stdoutdata, stderrdata) = pipe.communicate()
     dir_type = ssh_user_at_host or 'local'
     temp_dir = tempfile.mkdtemp(prefix='compare_%s_' % dir_type)
-    extract_tar_skip_hard_links(stdoutdata, temp_dir)
+    try:
+        extract_tar_skip_hard_links(stdoutdata, temp_dir)
+    except tarfile.ReadError as exc:
+        logger.warn(exc)
+        logger.warn('Size of stdout: %s stderr: %s' % (len(stdoutdata), stderrdata))
+        sys.exit()
     dir_count = 0
     file_count = 0
     for root, dirs, files in os.walk(temp_dir):
