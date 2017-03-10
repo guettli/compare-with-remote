@@ -50,6 +50,17 @@ You want to compare all files in the /etc directory which contain the word "rsys
 
     root@local-server> compare-with-remote --only-files-containing-pattern rsyslog remote-server /etc
 
+Screenshots
+-----------
+
+After fetching the files, the script calls the tool "meld" to show the actual diff:
+
+.. image:: https://github.com/guettli/compare-with-remote/blob/master/docs/screenshot-of-meld-compare-directory.png
+
+
+Here is a screenshot of meld showing the difference between two files:
+
+.. image:: https://github.com/guettli/compare-with-remote/blob/master/docs/screenshot-of-meld-compare-file.png
 
 Don't be shy
 ------------
