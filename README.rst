@@ -3,6 +3,14 @@ compare-with-remote
 
 Compare local files with remote files 
 
+About
+-----
+
+This is a generic file comparing tool. I wrote it to help the transition from "pet to cattle". With other words
+I am switching from linux server managed with vi and ssh to configuration management.
+
+It helps you to compare files on a remote host with files on your local file system.
+
 Install
 -------
 
@@ -32,11 +40,6 @@ Usage
       -h, --help            show this help message and exit
       --only-files-containing-pattern ONLY_FILES_CONTAINING_PATTERN
 
-Context
--------
-
-This is a generic file comparing tool. I wrote it to help the transition from "pet to cattle". With other words
-I am switching from linux server managed with vi and ssh to configuration management.
 
 Examples
 --------
