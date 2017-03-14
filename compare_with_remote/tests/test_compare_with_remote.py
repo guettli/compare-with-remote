@@ -23,7 +23,7 @@ class MyTestCase(unittest.TestCase):
 
     def test_user_at_host_or_none(self):
         self.assertEqual('user@foo', DirectoryURL('user@foo:mydir').user_at_host_or_none)
-
+        self.assertEqual(None, DirectoryURL('/etc').user_at_host_or_none)
 
     def test_string_to_save_file_name(self):
         self.assertEqual('x@:_______x', string_to_save_file_name('x@:ä  .. /x'))
