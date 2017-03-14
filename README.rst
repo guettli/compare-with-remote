@@ -1,3 +1,7 @@
+.. image:: https://travis-ci.org/guettli/compare-with-remote.svg?branch=master
+    :target: https://travis-ci.org/guettli/compare-with-remote
+
+
 compare-with-remote
 ---------------------
 
