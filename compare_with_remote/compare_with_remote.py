@@ -24,6 +24,7 @@ def main():
     parser.add_argument('directory_url_one', help='[[user@]remote-host:]dir', )
     parser.add_argument('directory_url_two', help='[[user@]remote-host:]dir', )
     args = parser.parse_args()
+
     tmp_dir_one = create_tmp_dir_and_fill_it_with_files(
         only_files_containing_pattern=args.only_files_containing_pattern,
         directory_url_as_string=args.directory_url_one)
