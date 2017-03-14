@@ -49,8 +49,8 @@ You want to compare all files in the /etc directory which contain the word "rsys
 .. code-block:: shell
 
     root@local-server> compare-with-remote --only-files-containing-pattern rsyslog \
-                                              root@pet-cute-name-1:/etc \
-                                              root@pet-cute-name-2:/etc
+                                              root@server-with-cute-name-1:/etc \
+                                              root@server-with-cute-name-2:/etc
 
 Screenshots
 -----------
