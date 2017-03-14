@@ -17,12 +17,13 @@ class MyTestCase(unittest.TestCase):
         self.assertEqual({'directory': '/mydir', 'user_at_host': 'user@foo'},
                          DirectoryURL.parse_url('user@foo:/mydir'))
 
-    def test_user_at_host_or_none(self):
-        self.assertEqual('user@foo', DirectoryURL('user@foo:mydir').user_at_host_or_none)
-
     def test_directory(self):
         self.assertEqual('mydir', DirectoryURL('user@foo:mydir').directory)
         self.assertEqual('', DirectoryURL('user@foo').directory)
+
+    def test_user_at_host_or_none(self):
+        self.assertEqual('user@foo', DirectoryURL('user@foo:mydir').user_at_host_or_none)
+
 
     def test_string_to_save_file_name(self):
         self.assertEqual('x@:_______x', string_to_save_file_name('x@:ä  .. /x'))
