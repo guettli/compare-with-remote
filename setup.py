@@ -13,7 +13,7 @@ with open(path.join(here, 'README.rst'), encoding='utf-8') as f:
 setup(
     name='compare-with-remote',
 
-    version='0.1',
+    version='0.1.1',
 
     description=' Compare local script output with remote script output',
     long_description=long_description,
