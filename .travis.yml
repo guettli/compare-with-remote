@@ -13,6 +13,7 @@ after_success:
 - chmod 600 travis_deploy_key
 - eval `ssh-agent -s`
 - ssh-add travis_deploy_key
+- git config --global push.default simple
 - git remote add deploy $(git remote -v | sed -nre 's#^origin.*https://([^/]*)/([^ ]*) *.*push.*#git@\1:\2#p')
 - git push deploy
 before_install:
