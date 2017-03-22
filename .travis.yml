@@ -9,7 +9,7 @@ script: pytest
 after_success:
 - git config --global user.email "bumpversion-after-ci@example.com"
 - git config --global user.name "Bumpversion after CI"
-- bumpversion minor
+- bumpversion --verbose minor
 - chmod 600 travis_deploy_key
 - eval `ssh-agent -s`
 - ssh-add travis_deploy_key
