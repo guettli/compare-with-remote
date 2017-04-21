@@ -13,6 +13,8 @@ with open(path.join(here, 'README.rst'), encoding='utf-8') as f:
 setup(
     name='compare-with-remote',
 
+    # Updated via travisd: https://travis-ci.org/guettli/compare-with-remote
+    # See .travis.yml
     version='0.10.0',
 
     description=' Compare local script output with remote script output',
