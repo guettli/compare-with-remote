@@ -19,65 +19,117 @@ def main():
     logger.setLevel(logging.INFO)
 
     parser = argparse.ArgumentParser(
-        description='compare two directories. Directories can get fetched via ssh first, then "meld" get called to copmare the directories. See https://github.com/guettli/compare-with-remote')
+        description='compare two directories or command outputs. Data can get fetched via ssh first, then "meld" get called to copmare the data. See https://github.com/guettli/compare-with-remote')
     parser.add_argument('--only-files-containing-pattern')
-    parser.add_argument('directory_url_one', help='[[user@]remote-host:]dir', )
-    parser.add_argument('directory_url_two', help='[[user@]remote-host:]dir', )
+    parser.add_argument('url_one', help='[[user@]remote-host:]dir', )
+    parser.add_argument('url_two', help='[[user@]remote-host:]dir', )
     args = parser.parse_args()
 
     tmp_dir_one = create_tmp_dir_and_fill_it_with_files(
         only_files_containing_pattern=args.only_files_containing_pattern,
-        directory_url_as_string=args.directory_url_one)
+        url_as_string=args.url_one)
     tmp_dir_two = create_tmp_dir_and_fill_it_with_files(
         only_files_containing_pattern=args.only_files_containing_pattern,
-        directory_url_as_string=args.directory_url_two)
+        url_as_string=args.url_two, other_url_as_string=args.url_one)
     diff_command = ['meld', tmp_dir_one, tmp_dir_two]
     logger.info('Calling %s' % diff_command)
     subprocess.call(diff_command)
 
 
-class DirectoryURL(object):
+class CompareURL(object):
+    SCHEME_DIR='dir'
+    SCHEME_CMD='cmd'
+
     url = None
 
     def __init__(self, url):
-        self.url = url
+        url=str(url)
+        self.url=url
+        self.parsed_url = self.parse_url(self.url)
+
+    @property
+    def scheme(self):
+        return self.parsed_url['scheme']
 
     @property
     def user_at_host_or_none(self):
-        return self.parse_url(self.url)['user_at_host']
+        return self.parsed_url['user_at_host']
 
     @property
     def directory(self):
-        return self.parse_url(self.url)['directory']
+        assert self.scheme==self.SCHEME_DIR, self.url
+        return self.parsed_url['directory_or_cmd']
 
-    _parse_url_regex = r'^((?P<user_at_host>([^@:\s]+@)?[^\s:@]+):)?(?P<directory>.*)$'
+    @property
+    def command(self):
+        assert self.scheme==self.SCHEME_CMD, self.url
+        return self.parsed_url['directory_or_cmd']
+
+    _parse_url_regex = r'^((?P<scheme>(cmd|dir):)?(?P<user_at_host>([^@:\s]+@)?[^\s:@]+):)?(?P<directory_or_cmd>.*)$'
 
     @classmethod
     def parse_url(cls, url):
         match = re.match(cls._parse_url_regex, url)
-        directory = match.groupdict()['directory']
+        scheme = match.groupdict()['scheme']
+        if not scheme:
+            scheme=cls.SCHEME_DIR
+        else:
+            scheme=scheme.strip(':')
+        directory_or_cmd = match.groupdict()['directory_or_cmd']
         user_at_host = match.groupdict()['user_at_host']
-        if user_at_host is None and '@' in directory:
-            user_at_host = directory
-            directory = ''
-        return dict(user_at_host=user_at_host, directory=directory)
+        if scheme==cls.SCHEME_DIR and user_at_host is None and '@' in directory_or_cmd:
+            user_at_host = directory_or_cmd
+            directory_or_cmd = ''
+        return dict(scheme=scheme, user_at_host=user_at_host, directory_or_cmd=directory_or_cmd)
 
+    def add_missing_parts_from_other_url(self, other_url_object):
+        if self.parsed_url['directory_or_cmd']:
+            return
+        self.parsed_url['directory_or_cmd']=other_url_object.parsed_url['directory_or_cmd']
 
-def create_tmp_dir_and_fill_it_with_files(directory_url_as_string, only_files_containing_pattern=None):
+def create_tmp_dir_and_fill_it_with_files(url_as_string, only_files_containing_pattern=None, other_url_as_string=None):
+    url_object = CompareURL(url_as_string)
+    if other_url_as_string:
+        url_object.add_missing_parts_from_other_url(CompareURL(other_url_as_string))
+
+    if url_object.scheme==CompareURL.SCHEME_DIR:
+        return create_tmp_dir_and_fill_it_with_files__scheme_dir(url_object, only_files_containing_pattern=only_files_containing_pattern)
+    if url_object.scheme==CompareURL.SCHEME_CMD:
+        if only_files_containing_pattern:
+            raise ValueError('only_files_containing_pattern does not make sense if you use scheme "dir"')
+        return create_tmp_dir_and_fill_it_with_files__scheme_cmd(url_object)
+    raise ValueError('unsupported scheme %s %s' % (url_object.scheme, url_as_string))
+
+def create_tmp_dir_and_fill_it_with_files__scheme_cmd(url_object):
+    cmd = ['ssh', url_object.user_at_host_or_none, url_object.command]
+    pipe = subprocess.Popen(cmd, stdout=subprocess.PIPE, stderr=subprocess.PIPE)
+    (stdoutdata, stderrdata) = pipe.communicate()
+    temp_dir = tempfile.mkdtemp(prefix='compare_%s_' % string_to_save_file_name(url_object.url))
+    write_output_to_temp_file(temp_dir, stdoutdata, 'stdout')
+    write_output_to_temp_file(temp_dir, stderrdata, 'stderr')
+    return temp_dir
+
+def write_output_to_temp_file(temp_dir, data, name):
+    if not data:
+        return
+    with io.open(os.path.join(temp_dir, '%s.txt' % name), 'wb') as fd:
+        fd.write(data)
+
+def create_tmp_dir_and_fill_it_with_files__scheme_dir(url_object, only_files_containing_pattern=None):
+
     filter_files_pipe = ''
     if only_files_containing_pattern:
         filter_files_pipe = '''xargs grep -liE '{}' | '''.format(only_files_containing_pattern)
     cmd = []
-    directory_url = DirectoryURL(directory_url_as_string)
     shell = True
-    if directory_url.user_at_host_or_none:
-        cmd = ['ssh', directory_url.user_at_host_or_none]
+    if url_object.user_at_host_or_none:
+        cmd = ['ssh', url_object.user_at_host_or_none]
         shell = False
     cmd.append('''find "{}" | {} tar --files-from=- -czf- '''.format(
-        directory_url.directory, filter_files_pipe))
+        url_object.directory, filter_files_pipe))
     pipe = subprocess.Popen(cmd, stdout=subprocess.PIPE, stderr=subprocess.PIPE, shell=shell)
     (stdoutdata, stderrdata) = pipe.communicate()
-    temp_dir = tempfile.mkdtemp(prefix='compare_%s_' % string_to_save_file_name(directory_url_as_string))
+    temp_dir = tempfile.mkdtemp(prefix='compare_%s_' % string_to_save_file_name(url_object.url))
     try:
         extract_tar_skip_hard_links(stdoutdata, temp_dir)
     except tarfile.ReadError as exc:
@@ -100,7 +152,10 @@ def extract_tar_skip_hard_links(stdoutdata, base_dir):
         for member in tar_obj.getmembers():
             if member.islnk():
                 continue
-            tar_obj.extract(member, base_dir)
+            try:
+                tar_obj.extract(member, str(base_dir))
+            except IOError as exc:
+                continue
 
 
 def string_to_save_file_name(my_string):
