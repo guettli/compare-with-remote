@@ -56,6 +56,18 @@ You want to compare all files in the /etc directory which contain the word "rsys
                                               root@server-with-cute-name-1:/etc \
                                               root@server-with-cute-name-2:/etc
 
+You can compare the output of scripts like this:
+
+.. code-block:: shell
+
+    root@local-server> compare-with-remote \
+        'postgres@server-with-cute-name-1:psql -c "select app, name from django_migrations order by id"' \
+        'postgres@server-with-cute-name-2:'
+
+If you don't provide a remote-command for the second host, then the command from the first host will get called. In this case
+all rows of a database table get compared.
+
+
 Screenshots
 -----------
 
