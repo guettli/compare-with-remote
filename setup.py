@@ -15,7 +15,7 @@ setup(
 
     # Updated via travisd: https://travis-ci.org/guettli/compare-with-remote
     # See .travis.yml
-    version='0.10.0',
+    version='0.11.0',
 
     description=' Compare local script output with remote script output',
     long_description=long_description,
